@@ -3,34 +3,27 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using Process.Interface;
+using Process.Interface.DataClasses;
+using ProcessCommunication.ProcessLibrary;
 using ProcessCommunication.ProcessLibrary.DataClasses;
+using ProcessCommunication.ProcessLibrary.Logic;
 
 const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
+var logger = new DebugLogger();
+var server = new ProcessManager(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
+var cts = new CancellationTokenSource();
+server.Start(cts.Token);
 
-var ipPAddress = IPAddress.Parse(IP_ADDRESS);
-var server = new TcpListener(ipPAddress, PORT);
-server.Start();
-
+Console.WriteLine($"Server started: {server.IsStarted}");
 while (true)
 {
-    var client = server.AcceptTcpClient();
-    Task.Factory.StartNew(() =>
-    {
-        DoCommunication(client);
-    });
+    
 }
 
 
-static void DoCommunication(TcpClient tcpClient)
-{
-    var networkStream = tcpClient.GetStream();
-    var streamReader = new StreamReader(networkStream, System.Text.Encoding.Unicode);
-    var result = streamReader.ReadLine();
-    var obj = JsonSerializer.Deserialize<StartServer>(result);
-    Console.WriteLine(obj);
-}
 
 
 

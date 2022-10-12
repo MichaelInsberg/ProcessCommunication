@@ -1,6 +1,13 @@
 ﻿namespace ProcessCommunication.ProcessLibrary.DataClasses;
 
-public sealed class StartServer
+/// <summary>
+/// The start server class
+/// </summary>
+public sealed class StartServer : BaseProcessCommunication
 {
-    public Servers Server { get; set; }
+    /// <summary>
+    /// Gets or sets the server types
+    /// </summary>
+
+    public ServerType ServerType { get; set; }
 }
