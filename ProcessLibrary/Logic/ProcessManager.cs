@@ -47,8 +47,8 @@ public class ProcessManager
         try
         {
             server.Start();
-            _ = Task.Factory.StartNew(() => StartReceivingCommands(token), token).ConfigureAwait(false);
-            _ = Task.Factory.StartNew(() => StartSendingCommands(token), token).ConfigureAwait(false);
+            _ =  Task.Factory.StartNew(() => StartReceivingCommands(token),TaskCreationOptions.LongRunning);
+            _ =  Task.Factory.StartNew(() => StartAcceptTcpClients(token), TaskCreationOptions.LongRunning);
             IsStarted = true;
         }
         catch (Exception e)
@@ -60,17 +60,30 @@ public class ProcessManager
         }
     }
 
-    private void StartSendingCommands(CancellationToken token)
+    private void StartAcceptTcpClients(CancellationToken token)
     {
+        if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
+        {
+            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(StartAcceptTcpClients)}";
+        }
         while (!token.IsCancellationRequested)
         {
             var client = server.AcceptTcpClient();
-            _ = Task.Factory.StartNew(() => DoCommunication(client, token), token);
+            _ = Task.Factory.StartNew(() => DoCommunication(client, token), TaskCreationOptions.LongRunning);
         }
     }
 
     private void DoCommunication(TcpClient tcpClient, CancellationToken token)
     {
+        if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
+        {
+            var address = "Unknown";
+            if (tcpClient.Client.RemoteEndPoint is IPEndPoint endPoint)
+            {
+                address = endPoint.Address.ToString();
+            }
+            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(DoCommunication)} | {address}";
+        }
         while (!token.IsCancellationRequested)
         {
             var networkStream = tcpClient.GetStream();
@@ -83,6 +96,10 @@ public class ProcessManager
 
     private void StartReceivingCommands(CancellationToken token)
     {
+        if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
+        {
+            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(StartAcceptTcpClients)}";
+        }
         while (!token.IsCancellationRequested)
         {
         }

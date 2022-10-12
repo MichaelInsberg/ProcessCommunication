@@ -1,0 +1,12 @@
+{
+  "ServerUri": "http://20.71.179.227:9000/",
+  "Organization": null,
+  "ProjectKey": "4JETF4",
+  "ProjectName": "Framework 4.0",
+  "Profiles": {
+    "CSharp": {
+      "ProfileKey": "AYOOEwtjVBbkWotuTGNe",
+      "ProfileTimestamp": "2022-10-04T14:56:01Z"
+    }
+  }
+}
