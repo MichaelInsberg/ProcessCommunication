@@ -1,29 +1,17 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Net;
-using System.Net.Sockets;
-using Process.Interface.DataClasses;
-using ProcessCommunication.ProcessLibrary.DataClasses;
-using ProcessCommunication.ProcessLibrary.Logic;
-
-const string IP_ADDRESS = "127.0.0.1";
+﻿const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
+var logger = new DebugLogger();
+using var processClient = new ProcessClient(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
+using var cts = new CancellationTokenSource();
+processClient.Connect(cts.Token);
 
-Console.WriteLine("Hello, World!");
-var ipPAddress = IPAddress.Parse(IP_ADDRESS);
+Console.WriteLine($"Client connected {processClient.IsConnected}");
 
-    
-var client = new TcpClient();
-client.Connect(ipPAddress, PORT);
+var startServer = new CommandStartServer();
+await processClient.WriteCommandAsync(startServer).ConfigureAwait(false);
+Console.WriteLine("Sent data 1");
+await processClient.WriteCommandAsync(startServer).ConfigureAwait(false);
+Console.WriteLine("Sent data 2");
+_ = Console.ReadLine();
 
-var networkStream = client.GetStream();
-var streamWriter = new StreamWriter(networkStream, System.Text.Encoding.Unicode);
-var startServer = new StartServer();
-var serializer = new SerializerHelper();
-string stringValue = serializer.Serialize(new NotNull<object>(startServer));
-streamWriter.WriteLine(stringValue);
-streamWriter.Flush();
-
-Console.WriteLine("Sent data");
-Console.ReadLine();

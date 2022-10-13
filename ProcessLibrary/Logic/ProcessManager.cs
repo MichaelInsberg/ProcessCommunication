@@ -1,29 +1,21 @@
 ﻿using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text;
 using ProcessCommunication.ProcessLibrary.DataClasses;
+using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
 
 namespace ProcessCommunication.ProcessLibrary.Logic;
 
 /// <summary>
 /// The process manager class
 /// </summary>
-public sealed class ProcessManager : IDisposable
+public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
 {
     private volatile bool isDisposed;
     private readonly TcpListener server;
-    private readonly ILogger logger;
-    private readonly SerializerHelper serializerHelper;
-    private readonly ConcurrentDictionary<TcpClient, TcpClientItem> connecedClients;
+    private readonly ConcurrentDictionary<TcpClient, TcpClientItem> connectedClients;
+    private readonly ConcurrentQueue<ProcessDataBase> commandQueue;
 
-    /// <summary>
-    /// Gets or sets the IP address
-    /// </summary>
-    public string IpAddress { get; }
-
-    /// <summary>
-    /// Gets or sets the port
-    /// </summary>
-    public int Port { get; }
 
     /// <summary>
     /// Gets the us started indicting if started or not
@@ -33,16 +25,13 @@ public sealed class ProcessManager : IDisposable
     /// <summary>
     /// Create a new instance of ProcessManager
     /// </summary>
-    public ProcessManager(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port)
+    public ProcessManager(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port): base(logger, ipAddress, port)
     {
-        serializerHelper = new SerializerHelper();
-        this.logger = logger.Value;
-        IpAddress = ipAddress.Value;
-        Port = port;
         var ipPAddress = IPAddress.Parse(ipAddress.Value);
         server = new TcpListener(ipPAddress, port);
         IsStarted = false;
-        connecedClients = new ConcurrentDictionary<TcpClient, TcpClientItem>();
+        connectedClients = new ConcurrentDictionary<TcpClient, TcpClientItem>();
+        commandQueue = new ConcurrentQueue<ProcessDataBase>();
     }
 
     /// <summary>
@@ -59,19 +48,26 @@ public sealed class ProcessManager : IDisposable
     /// <param name="token">The cancellation token</param>
     public void Start(CancellationToken token)
     {
-        logger.Log(new NotEmptyOrWhiteSpace($"Try to start server with IpAddress <{IpAddress}> and port number <{Port}>"));
+        Logger.Log(new NotEmptyOrWhiteSpace(
+            $"Try to start server with IpAddress <{IpAddress}> and port number " +
+            $"<{Port.ToString(CultureInfo.InvariantCulture)}>"));
         try
         {
             server.Start();
-            _ = Task.Factory.StartNew(() => HandleReceivedCommands(token), TaskCreationOptions.LongRunning);
-            _ = Task.Factory.StartNew(() => StartAcceptTcpClients(token), TaskCreationOptions.LongRunning);
+            _ = Task.Factory.StartNew(() => ReceivedCommands(token), TaskCreationOptions.LongRunning);
+            _ = Task.Factory.StartNew(() => HandleRecievedCommnads(token), TaskCreationOptions.LongRunning);
             IsStarted = true;
+            Logger.Log(new NotEmptyOrWhiteSpace(
+                $"Started server with IpAddress <{IpAddress}>" +
+                $" and port number <{Port.ToString(CultureInfo.InvariantCulture)}>"));
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
             IsStarted = false;
-            logger.Log(new NotEmptyOrWhiteSpace($"Try to start server with IpAddress <{IpAddress}> and port number <{Port}>"));
-            Console.WriteLine(e);
+            Logger.LogException(new NotEmptyOrWhiteSpace(
+                "Exception when try to start server" +
+                $" IpAddress <{IpAddress}> and port number " +
+                $"<{Port.ToString(CultureInfo.InvariantCulture)}>"), exception);
             throw;
         }
     }
@@ -94,9 +90,9 @@ public sealed class ProcessManager : IDisposable
             return;
         }
 
-        while (connecedClients.IsEmpty)
+        while (connectedClients.IsEmpty)
         {
-            var item = connecedClients.FirstOrDefault();
+            var item = connectedClients.FirstOrDefault();
             var tcpClient = item.Key;
             if (tcpClient == null)
             {
@@ -109,11 +105,11 @@ public sealed class ProcessManager : IDisposable
     }
 
 
-    private void StartAcceptTcpClients(CancellationToken token)
+    private void HandleRecievedCommnads(CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
         {
-            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(StartAcceptTcpClients)}";
+            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(HandleRecievedCommnads)}";
         }
 
         while (!token.IsCancellationRequested)
@@ -121,7 +117,7 @@ public sealed class ProcessManager : IDisposable
             var client = server.AcceptTcpClient();
             var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
             var tcpClientItem = new TcpClientItem(new NotNull<TcpClient>(client), cancellationTokenSource);
-            connecedClients.AddOrUpdate(client, tcpClientItem, (_, item) => item);
+            _ = connectedClients.AddOrUpdate(client, tcpClientItem, (_, item) => item);
             _ = Task.Factory.StartNew(() => DoCommunication(client, cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
         }
     }
@@ -134,39 +130,42 @@ public sealed class ProcessManager : IDisposable
         {
             address = endPoint.Address.ToString();
         }
+        Logger.Log(new NotEmptyOrWhiteSpace($"Start communication with {address}"));
         var canContinue = !token.IsCancellationRequested && tcpClient.Connected;
         while (canContinue)
         {
             try
             {
+                Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {address}"));
                 var networkStream = tcpClient.GetStream();
                 var streamReader = new StreamReader(networkStream, Encoding.Unicode);
                 var result = streamReader.ReadLine();
-                var obj = serializerHelper.DeSerialize<StartServer>(new NotEmptyOrWhiteSpace(result));
+                var obj = SerializerHelper.DeSerialize<CommandStartServer>(new NotEmptyOrWhiteSpace(result));
                 //ToDo enque the commannd in commad queue
-                logger.Log(new NotEmptyOrWhiteSpace($"type received {obj.GetType()}"));
+                Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
                 canContinue = !token.IsCancellationRequested && tcpClient.Connected;
             }
             catch (Exception exception)
             {
-                logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {address}"), exception);
+                Logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {address}"), exception);
                 canContinue = false;
             }
         }
 
         RemoveClient(tcpClient, token);
+        Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {address}"));
     }
 
     private void RemoveClient(TcpClient tcpClient, CancellationToken token)
     {
-        if (!connecedClients.TryRemove(tcpClient, out var item))
+        if (!connectedClients.TryRemove(tcpClient, out var item))
         {
             Task.Delay(1, token).Wait(token);
         }
         item?.Dispose();
     }
 
-    private void HandleReceivedCommands(CancellationToken token)
+    private void ReceivedCommands(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {

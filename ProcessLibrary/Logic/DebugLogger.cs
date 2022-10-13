@@ -38,9 +38,13 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         private static void WriteMessage(string message)
         {
             var value = 
+                $"{Environment.NewLine}"+
                 "----------------------------------------------------------------------------------------------------------------------"+
-                $"Id:<{Thread.CurrentThread.ManagedThreadId}> DT:<{DateTime.Now.ToString(CultureInfo.InvariantCulture)}>{Environment.NewLine}" +
-                $"{message}"+
+                $"{Environment.NewLine}"+
+                $"Thread Id:<{Thread.CurrentThread.ManagedThreadId}> Datetime:<{DateTime.Now.ToString(CultureInfo.InvariantCulture)}>" +
+                $"{Environment.NewLine}" +
+                $"{message}" +
+                $"{Environment.NewLine}"+
                 "----------------------------------------------------------------------------------------------------------------------";
             Trace.WriteLine(value);
             Console.WriteLine(value);
