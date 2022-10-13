@@ -5,7 +5,9 @@ var logger = new DebugLogger();
 using var server = new ProcessManager(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
 using var cts = new CancellationTokenSource();
 
-server.Start(cts.Token);
+Func<IProcessCommandHandler> func = () => new ProcessServerCommandHandler();
+
+server.Start(cts.Token, func);
 
 logger.Log(new NotEmptyOrWhiteSpace($"Server started: {server.IsStarted}"));
 logger.Log(new NotEmptyOrWhiteSpace("Press CTRL C to finish the application"));

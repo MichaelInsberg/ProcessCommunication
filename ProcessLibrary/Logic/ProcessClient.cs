@@ -1,5 +1,4 @@
-﻿using System.Text;
-using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
+﻿using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
 using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
 namespace ProcessCommunication.ProcessLibrary.Logic
@@ -37,6 +36,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         {
             try
             {
+                
                 client.Connect(ipPAddress, Port);
                 IsConnected = client.Connected;
                 _ = Task.Factory.StartNew(() => ReceivedCommands(token), TaskCreationOptions.LongRunning);
@@ -57,10 +57,11 @@ namespace ProcessCommunication.ProcessLibrary.Logic
                 try
                 {
                     var networkStream = client.GetStream();
-                    var streamReader = new StreamReader(networkStream, Encoding.Unicode);
+                    var streamReader = new StreamReader(networkStream);
                     Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {IpAddress}"));
                     var result = streamReader.ReadLine();
-                    //ToDo: Hier vesuchen der string in igrend ein Object zu deserialiseiren
+                    //ToDo:
+                    //Hier vesuchen der string in igrend ein Object zu deserialiseiren
                     var obj = SerializerHelper.DeSerialize<ResponseStartServer>(new NotEmptyOrWhiteSpace(result));
                     //ToDo callback with the recieved command
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
@@ -86,7 +87,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             try
             {
                 var networkStream = client.GetStream();
-                var streamWriter = new StreamWriter(networkStream, Encoding.Unicode);
+                var streamWriter = new StreamWriter(networkStream);
                 var stringValue = SerializerHelper.Serialize(new NotNull<object>(startServer));
                 await streamWriter.WriteLineAsync(stringValue).ConfigureAwait(false);
                 await streamWriter.FlushAsync().ConfigureAwait(false);

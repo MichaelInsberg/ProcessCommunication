@@ -15,7 +15,8 @@ public sealed class SerializerHelper
         jsonSerializerSettings = new JsonSerializerSettings
         {
             MissingMemberHandling = MissingMemberHandling.Error,
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.Auto,
+            
         };
     }
 
@@ -38,6 +39,16 @@ public sealed class SerializerHelper
     public T DeSerialize<T>(NotEmptyOrWhiteSpace stringValue)
     {
         var deserializeObject = JsonConvert.DeserializeObject<T>(stringValue.Value, jsonSerializerSettings);
+        if (deserializeObject is null)
+        {
+            throw new NotSupportedException($"Unable to deserialize {stringValue.Value}");
+        }
+        return deserializeObject;
+    }
+
+    public object DeSerialize(NotEmptyOrWhiteSpace stringValue, Type type)
+    {
+        var deserializeObject = JsonConvert.DeserializeObject(stringValue.Value, type, jsonSerializerSettings);
         if (deserializeObject is null)
         {
             throw new NotSupportedException($"Unable to deserialize {stringValue.Value}");

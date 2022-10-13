@@ -12,6 +12,9 @@ public sealed class TcpClientItem : IDisposable
     private readonly TcpClient client;
     private readonly ConcurrentQueue<string> commandQueue;
 
+    /// <summary>
+    /// Gets the command queue
+    /// </summary>
     public ConcurrentQueue<string> CommandQueue => commandQueue;
 
     /// <summary>
@@ -51,9 +54,9 @@ public sealed class TcpClientItem : IDisposable
         }
         
         cancellationTokenSource.Dispose();
+        
         client.Dispose();
         
         isDisposed = true;
     }
-
 }
