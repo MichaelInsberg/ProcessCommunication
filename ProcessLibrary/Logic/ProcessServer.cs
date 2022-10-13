@@ -3,7 +3,7 @@
 /// <summary>
 /// The process manager class
 /// </summary>
-public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
+public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
 {
     private readonly TcpListener server;
     private volatile bool isDisposed;
@@ -17,7 +17,7 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     /// <summary>
     /// Create a new instance of ProcessManager
     /// </summary>
-    public ProcessManager(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port): base(logger, ipAddress, port)
+    public ProcessServer(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port): base(logger, ipAddress, port)
     {
         var ipPAddress = IPAddress.Parse(ipAddress.Value);
         server = new TcpListener(ipPAddress, port);
@@ -27,7 +27,7 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     /// <summary>
     /// Destructor for instance of ProcessManager
     /// </summary>
-    ~ProcessManager()
+    ~ProcessServer()
     {
         Dispose(false);
     }
@@ -35,9 +35,9 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     /// <summary>
     /// Start the process communication 
     /// </summary>
-    /// <param name="token">The cancellation token</param>
     /// <param name="processCommandHandlerCreator">The function to create the process command handler</param>
-    public void Start(CancellationToken token, Func<IProcessCommandHandler> processCommandHandlerCreator)
+    /// <param name="token">The cancellation token </param>
+    public void Start(Func<IProcessCommandHandler> processCommandHandlerCreator, CancellationToken token)
     {
         Logger.Log(new NotEmptyOrWhiteSpace(
             $"Try to start server with IpAddress <{IpAddress}> and port number " +
@@ -88,7 +88,7 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     {
         if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
         {
-            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(HandleReceivedCommands)}";
+            Thread.CurrentThread.Name = $"{nameof(ProcessServer)}| {nameof(HandleReceivedCommands)}";
         }
 
         while (!token.IsCancellationRequested)
@@ -107,6 +107,8 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
         }
         Logger.Log(new NotEmptyOrWhiteSpace($"Start communication with {address}"));
         var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+        var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
+
         try
         {
             var canContinue = !token.IsCancellationRequested && tcpClient.Connected;
@@ -114,10 +116,8 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
             {
                 try
                 {
-                    Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {address}"));
-                    var networkStream = tcpClient.GetStream();
-                    var streamReader = new StreamReader(networkStream);
-                    var result = streamReader.ReadLine();
+                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(tcpClient));
+                    var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(address), cts.Token);
                     if (string.IsNullOrWhiteSpace(result))
                     {
                         continue;
@@ -148,8 +148,8 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
         CancellationToken token)
     {
         var processHandler = funcProcessCommandHandler.Invoke();
-        var client = new ProcessTcpTcpClient(new NotNull<TcpClient>(tcpClient));
-        var processClient = new NotNull<TcpClient>(tcpClient);
+        var client = new ProcessTcpClient(new NotNull<TcpClient>(tcpClient));
+        var processClient = new NotNull<IProcessTcpClient>(client);
         processHandler.HandelCommand(processClient, new NotEmptyOrWhiteSpace(processCommand), token);
     }
 }

@@ -52,16 +52,15 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         private void ReceivedCommands(CancellationToken token)
         {
             var canContinue = !token.IsCancellationRequested && client.Connected;
+            var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
             while (canContinue)
             {
                 try
                 {
-                    var networkStream = client.GetStream();
-                    var streamReader = new StreamReader(networkStream);
-                    Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {IpAddress}"));
-                    var result = streamReader.ReadLine();
-                    //ToDo:
-                    //Hier vesuchen der string in igrend ein Object zu deserialiseiren
+                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(client));
+                    var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(IpAddress), token);
+                    //ToDo: func<IProcessResponseHandler, IResponseHandler>
+                    
                     var obj = SerializerHelper.DeSerialize<ResponseStartServer>(new NotEmptyOrWhiteSpace(result));
                     //ToDo callback with the recieved command
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));

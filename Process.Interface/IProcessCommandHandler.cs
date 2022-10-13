@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using Process.Interface.DataClasses;
+﻿using Process.Interface.DataClasses;
 
 namespace Process.Interface;
 
@@ -10,5 +9,5 @@ namespace Process.Interface;
 /// </summary>
 public interface IProcessCommandHandler
 {
-    void HandelCommand(NotNull<TcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token);
+    void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token);
 }

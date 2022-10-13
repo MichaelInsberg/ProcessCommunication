@@ -13,7 +13,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         }
 
         /// <inheritdoc />
-        public void HandelCommand(NotNull<TcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token)
+        public void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token)
         {
             registerCommandTypes = GetRegistedTypes().Value;
             var receivedCommand = GetCommand(command.Value, token);
@@ -27,7 +27,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         protected abstract NotNull<IEnumerable<Type>> GetRegistedTypes();
 
         protected abstract void HandelCommandInternal(
-            NotNull<TcpClient> processClient,
+            NotNull<IProcessTcpClient> processTcpClient,
             NotNull<CommandBase> command,
             CancellationToken token);
 

@@ -14,7 +14,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             return new NotNull<IEnumerable<Type>>(enumerable);
         }
 
-        protected override void HandelCommandInternal(NotNull<TcpClient> processClient, NotNull<CommandBase> command, CancellationToken token)
+        protected override void HandelCommandInternal(NotNull<IProcessTcpClient> processClient, NotNull<CommandBase> command, CancellationToken token)
         {
             var commandType = command.Value.GetType();
             if (commandType == typeof(CommandStartServer))

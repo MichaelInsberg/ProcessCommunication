@@ -3,7 +3,7 @@
 /// <summary>
 /// The process client class
 /// </summary>
-public sealed class ProcessTcpTcpClient : IProcessTcpClient
+public sealed class ProcessTcpClient : IProcessTcpClient
 {
     private volatile bool isDisposed;
     private readonly TcpClient client;
@@ -11,7 +11,7 @@ public sealed class ProcessTcpTcpClient : IProcessTcpClient
     /// <summary>
     /// Create a new instance of ProcessClient
     /// </summary>
-    public ProcessTcpTcpClient(NotNull<TcpClient> client)
+    public ProcessTcpClient(NotNull<TcpClient> client)
     {
         this.client = client.Value;
     }
@@ -19,7 +19,7 @@ public sealed class ProcessTcpTcpClient : IProcessTcpClient
     /// <summary>
     /// Destructor for instance of ProcessClient
     /// </summary>
-    ~ProcessTcpTcpClient()
+    ~ProcessTcpClient()
     {
         Dispose(disposing: false);
     }
