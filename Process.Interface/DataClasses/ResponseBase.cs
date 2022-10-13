@@ -1,4 +1,4 @@
-﻿namespace ProcessCommunication.ProcessLibrary.DataClasses.Response
+﻿namespace Process.Interface.DataClasses
 {
     /// <summary>
     /// The response base class

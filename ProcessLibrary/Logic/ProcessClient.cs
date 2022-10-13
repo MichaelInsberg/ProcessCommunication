@@ -1,7 +1,4 @@
-﻿using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
-using ProcessCommunication.ProcessLibrary.DataClasses.Response;
-
-namespace ProcessCommunication.ProcessLibrary.Logic
+﻿namespace ProcessCommunication.ProcessLibrary.Logic
 {
     /// <summary>
     /// The process client class
@@ -32,14 +29,13 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             Dispose(disposing: false);
         }
 
-        public void Connect(CancellationToken token)
+        public void Connect(CancellationToken token, Func<IProgessResponseHandler> progressResponseHandler)
         {
             try
             {
-                
                 client.Connect(ipPAddress, Port);
                 IsConnected = client.Connected;
-                _ = Task.Factory.StartNew(() => ReceivedCommands(token), TaskCreationOptions.LongRunning);
+                _ = Task.Factory.StartNew(() => ReceivedCommands(progressResponseHandler, token), TaskCreationOptions.LongRunning);
             }
             catch (Exception exception)
             {
@@ -49,7 +45,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             }
         }
 
-        private void ReceivedCommands(CancellationToken token)
+        private void ReceivedCommands(Func<IProgessResponseHandler> progessResponseHandler, CancellationToken token)
         {
             var canContinue = !token.IsCancellationRequested && client.Connected;
             var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
@@ -59,11 +55,12 @@ namespace ProcessCommunication.ProcessLibrary.Logic
                 {
                     var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(client));
                     var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(IpAddress), token);
-                    //ToDo: func<IProcessResponseHandler, IResponseHandler>
-                    
-                    var obj = SerializerHelper.DeSerialize<ResponseStartServer>(new NotEmptyOrWhiteSpace(result));
-                    //ToDo callback with the recieved command
-                    Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
+                    if (string.IsNullOrWhiteSpace(result))
+                    {
+                        continue;
+                    }
+                    Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
+                    _ = Task.Factory.StartNew(() => HandleResponse(progessResponseHandler, result), token);
                     canContinue = !token.IsCancellationRequested && client.Connected;
                 }
                 catch (Exception exception)
@@ -75,6 +72,19 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             }
 
             Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {IpAddress}"));
+        }
+
+        private void HandleResponse(Func<IProgessResponseHandler> progessResponseHandler, string result)
+        {
+            try
+            {
+                var processHandler = progessResponseHandler.Invoke();
+                processHandler.HandleResponse(new NotEmptyOrWhiteSpace(result));
+            }
+            catch (Exception exception)
+            {
+                Logger.LogException(new NotEmptyOrWhiteSpace($"Excpetion in {nameof(HandleResponse)}"),exception);
+            }
         }
 
         /// <summary>

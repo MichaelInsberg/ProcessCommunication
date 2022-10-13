@@ -37,7 +37,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     /// </summary>
     /// <param name="processCommandHandlerCreator">The function to create the process command handler</param>
     /// <param name="token">The cancellation token </param>
-    public void Start(Func<IProcessCommandHandler> processCommandHandlerCreator, CancellationToken token)
+    public void Start(Func<IProcessCommunicationHandler> processCommandHandlerCreator, CancellationToken token)
     {
         Logger.Log(new NotEmptyOrWhiteSpace(
             $"Try to start server with IpAddress <{IpAddress}> and port number " +
@@ -84,7 +84,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     }
 
 
-    private void HandleReceivedCommands(Func<IProcessCommandHandler> funcProcessCommandHandler, CancellationToken token)
+    private void HandleReceivedCommands(Func<IProcessCommunicationHandler> funcProcessCommandHandler, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
         {
@@ -98,7 +98,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         }
     }
 
-    private void DoCommunication(TcpClient tcpClient, Func<IProcessCommandHandler> funcProcessCommandHandler, CancellationToken token)
+    private void DoCommunication(TcpClient tcpClient, Func<IProcessCommunicationHandler> funcProcessCommandHandler, CancellationToken token)
     {
         var address = "Unknown";
         if (tcpClient.Client.RemoteEndPoint is IPEndPoint endPoint)
@@ -144,7 +144,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     private static void SendResponse(
         TcpClient tcpClient, 
         string processCommand, 
-        Func<IProcessCommandHandler> funcProcessCommandHandler, 
+        Func<IProcessCommunicationHandler> funcProcessCommandHandler, 
         CancellationToken token)
     {
         var processHandler = funcProcessCommandHandler.Invoke();

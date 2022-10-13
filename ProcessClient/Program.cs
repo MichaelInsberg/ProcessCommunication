@@ -4,7 +4,9 @@ const int PORT = 58174;
 var logger = new DebugLogger();
 using var processClient = new ProcessClient(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
 using var cts = new CancellationTokenSource();
-processClient.Connect(cts.Token);
+Func<IProgessResponseHandler> func = () => new ProgessResponseHandler();
+
+processClient.Connect(cts.Token, func);
 
 Console.WriteLine($"Client connected {processClient.IsConnected}");
 

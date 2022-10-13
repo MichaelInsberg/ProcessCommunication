@@ -1,9 +1,8 @@
-﻿using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
-using ProcessCommunication.ProcessLibrary.DataClasses.Response;
+﻿using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
 namespace ProcessCommunication.ProcessLibrary.Logic
 {
-    public sealed class ProcessServerCommandHandler : ProcessCommandHandlerBase
+    public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandler
     {
         protected override NotNull<IEnumerable<Type>> GetRegistedTypes()
         {

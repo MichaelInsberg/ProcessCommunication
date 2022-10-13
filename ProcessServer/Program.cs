@@ -5,7 +5,7 @@ var logger = new DebugLogger();
 using var server = new ProcessServer(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
 using var cts = new CancellationTokenSource();
 
-Func<IProcessCommandHandler> func = () => new ProcessServerCommandHandler();
+Func<IProcessCommunicationHandler> func = () => new ProcessServerCommunicationHandler();
 
 server.Start(func,cts.Token);
 
