@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using ProcessCommunication.ProcessLibrary.DataClasses;
 using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
+using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
 namespace ProcessCommunication.ProcessLibrary.Logic;
 
@@ -140,7 +141,9 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
                 var networkStream = tcpClient.GetStream();
                 var streamReader = new StreamReader(networkStream, Encoding.Unicode);
                 var result = streamReader.ReadLine();
+                //ToDo Hier den String in die Queue tun und späer vesuchen dern in igrendein Object zu deserialiseiren
                 var obj = SerializerHelper.DeSerialize<CommandStartServer>(new NotEmptyOrWhiteSpace(result));
+                commandQueue.Enqueue(obj);
                 //ToDo enque the commannd in commad queue
                 Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
                 canContinue = !token.IsCancellationRequested && tcpClient.Connected;
@@ -169,6 +172,21 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     {
         while (!token.IsCancellationRequested)
         {
+            if (commandQueue.IsEmpty)
+            {
+                Task.Delay(1, token).Wait(token);
+                continue;
+            }
+
+            commandQueue.TryDequeue(out var command);
+            var item  =connectedClients.FirstOrDefault();
+            var client = item.Key;
+            var networkStream = client.GetStream();
+            var streamWriter = new StreamWriter(networkStream, Encoding.Unicode);
+            var responseStartServer = new ResponseStartServer { IpAddress = IpAddress, IsStarted = true, SerialNumber = "Wurst" };
+            var stringValue = SerializerHelper.Serialize(new NotNull<object>(responseStartServer));
+            streamWriter.WriteLineAsync(stringValue).ConfigureAwait(false);
+            streamWriter.FlushAsync().ConfigureAwait(false);
         }
     }
 }

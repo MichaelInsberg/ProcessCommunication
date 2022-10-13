@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
+using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
 namespace ProcessCommunication.ProcessLibrary.Logic
 {
@@ -51,16 +52,16 @@ namespace ProcessCommunication.ProcessLibrary.Logic
         private void ReceivedCommands(CancellationToken token)
         {
             var canContinue = !token.IsCancellationRequested && client.Connected;
-            using var networkStream = client.GetStream();
-            using var streamReader = new StreamReader(networkStream, Encoding.Unicode);
             while (canContinue)
             {
                 try
                 {
+                    var networkStream = client.GetStream();
+                    var streamReader = new StreamReader(networkStream, Encoding.Unicode);
                     Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {IpAddress}"));
                     var result = streamReader.ReadLine();
-                    var obj = SerializerHelper.DeSerialize<CommandStartServer>(new NotEmptyOrWhiteSpace(result));
-                    //ToDo enque the commannd in commad queue
+                    var obj = SerializerHelper.DeSerialize<ResponseStartServer>(new NotEmptyOrWhiteSpace(result));
+                    //ToDo callback with the recieved command
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
                     canContinue = !token.IsCancellationRequested && client.Connected;
                 }
