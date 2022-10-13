@@ -1,4 +1,7 @@
-﻿namespace ProcessCommunication.ProcessLibrary.Logic
+﻿using System.Diagnostics;
+using System.Globalization;
+
+namespace ProcessCommunication.ProcessLibrary.Logic
 {
     /// <summary>
     /// The debug logger class
@@ -14,22 +17,33 @@
         /// <inheritdoc />
         public void LogException(NotEmptyOrWhiteSpace logMessage, Exception? exception)
         {
-            Console.WriteLine(logMessage.Value);
+            WriteMessage(logMessage.Value);
             if (exception is null)
             {
                 return;
             }
 
             var message = exception.Message;
-            Console.WriteLine(message);
+            WriteMessage($"Exception message: {message}");
             var innerException = exception.InnerException;
             while (innerException is not null)
             {
                 message = innerException.Message;
-                Console.WriteLine(message);
+                WriteMessage($"Inner exception message: {message}");
                 innerException = innerException.InnerException;
             }
 
+        }
+
+        private static void WriteMessage(string message)
+        {
+            var value = 
+                "----------------------------------------------------------------------------------------------------------------------"+
+                $"Id:<{Thread.CurrentThread.ManagedThreadId}> DT:<{DateTime.Now.ToString(CultureInfo.InvariantCulture)}>{Environment.NewLine}" +
+                $"{message}"+
+                "----------------------------------------------------------------------------------------------------------------------";
+            Trace.WriteLine(value);
+            Console.WriteLine(value);
         }
     }
 }

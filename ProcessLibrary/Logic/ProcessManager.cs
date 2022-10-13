@@ -1,15 +1,19 @@
-﻿using ProcessCommunication.ProcessLibrary.DataClasses;
+﻿using System.Collections.Concurrent;
+using System.Text;
+using ProcessCommunication.ProcessLibrary.DataClasses;
 
 namespace ProcessCommunication.ProcessLibrary.Logic;
 
 /// <summary>
 /// The process manager class
 /// </summary>
-public class ProcessManager
+public sealed class ProcessManager : IDisposable
 {
+    private volatile bool isDisposed;
     private readonly TcpListener server;
     private readonly ILogger logger;
     private readonly SerializerHelper serializerHelper;
+    private readonly ConcurrentDictionary<TcpClient, TcpClientItem> connecedClients;
 
     /// <summary>
     /// Gets or sets the IP address
@@ -21,6 +25,9 @@ public class ProcessManager
     /// </summary>
     public int Port { get; }
 
+    /// <summary>
+    /// Gets the us started indicting if started or not
+    /// </summary>
     public bool IsStarted { get; private set; }
 
     /// <summary>
@@ -35,6 +42,15 @@ public class ProcessManager
         var ipPAddress = IPAddress.Parse(ipAddress.Value);
         server = new TcpListener(ipPAddress, port);
         IsStarted = false;
+        connecedClients = new ConcurrentDictionary<TcpClient, TcpClientItem>();
+    }
+
+    /// <summary>
+    /// Destructor for instance of ProcessManager
+    /// </summary>
+    ~ProcessManager()
+    {
+        Dispose(false);
     }
 
     /// <summary>
@@ -47,8 +63,8 @@ public class ProcessManager
         try
         {
             server.Start();
-            _ =  Task.Factory.StartNew(() => StartReceivingCommands(token),TaskCreationOptions.LongRunning);
-            _ =  Task.Factory.StartNew(() => StartAcceptTcpClients(token), TaskCreationOptions.LongRunning);
+            _ = Task.Factory.StartNew(() => HandleReceivedCommands(token), TaskCreationOptions.LongRunning);
+            _ = Task.Factory.StartNew(() => StartAcceptTcpClients(token), TaskCreationOptions.LongRunning);
             IsStarted = true;
         }
         catch (Exception e)
@@ -60,46 +76,98 @@ public class ProcessManager
         }
     }
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern
+    /// </summary>
+    /// <param name="disposing">is currently disposing</param>
+    private void Dispose(bool disposing)
+    {
+        if (!disposing || isDisposed)
+        {
+            return;
+        }
+
+        while (connecedClients.IsEmpty)
+        {
+            var item = connecedClients.FirstOrDefault();
+            var tcpClient = item.Key;
+            if (tcpClient == null)
+            {
+                continue;
+            }
+            RemoveClient(tcpClient, new CancellationToken());
+        }
+
+        isDisposed = true;
+    }
+
+
     private void StartAcceptTcpClients(CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
         {
             Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(StartAcceptTcpClients)}";
         }
+
         while (!token.IsCancellationRequested)
         {
             var client = server.AcceptTcpClient();
-            _ = Task.Factory.StartNew(() => DoCommunication(client, token), TaskCreationOptions.LongRunning);
+            var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            var tcpClientItem = new TcpClientItem(new NotNull<TcpClient>(client), cancellationTokenSource);
+            connecedClients.AddOrUpdate(client, tcpClientItem, (_, item) => item);
+            _ = Task.Factory.StartNew(() => DoCommunication(client, cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
         }
     }
+
 
     private void DoCommunication(TcpClient tcpClient, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
+        var address = "Unknown";
+        if (tcpClient.Client.RemoteEndPoint is IPEndPoint endPoint)
         {
-            var address = "Unknown";
-            if (tcpClient.Client.RemoteEndPoint is IPEndPoint endPoint)
+            address = endPoint.Address.ToString();
+        }
+        var canContinue = !token.IsCancellationRequested && tcpClient.Connected;
+        while (canContinue)
+        {
+            try
             {
-                address = endPoint.Address.ToString();
+                var networkStream = tcpClient.GetStream();
+                var streamReader = new StreamReader(networkStream, Encoding.Unicode);
+                var result = streamReader.ReadLine();
+                var obj = serializerHelper.DeSerialize<StartServer>(new NotEmptyOrWhiteSpace(result));
+                //ToDo enque the commannd in commad queue
+                logger.Log(new NotEmptyOrWhiteSpace($"type received {obj.GetType()}"));
+                canContinue = !token.IsCancellationRequested && tcpClient.Connected;
             }
-            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(DoCommunication)} | {address}";
+            catch (Exception exception)
+            {
+                logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {address}"), exception);
+                canContinue = false;
+            }
         }
-        while (!token.IsCancellationRequested)
-        {
-            var networkStream = tcpClient.GetStream();
-            var streamReader = new StreamReader(networkStream, System.Text.Encoding.Unicode);
-            var result = streamReader.ReadLine();
-            var obj = serializerHelper.DeSerialize<StartServer>(new NotEmptyOrWhiteSpace(result));
-            logger.Log(new NotEmptyOrWhiteSpace($"type received {obj.GetType()}"));
-        }
+
+        RemoveClient(tcpClient, token);
     }
 
-    private void StartReceivingCommands(CancellationToken token)
+    private void RemoveClient(TcpClient tcpClient, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(Thread.CurrentThread.Name))
+        if (!connecedClients.TryRemove(tcpClient, out var item))
         {
-            Thread.CurrentThread.Name = $"{nameof(ProcessManager)}| {nameof(StartAcceptTcpClients)}";
+            Task.Delay(1, token).Wait(token);
         }
+        item?.Dispose();
+    }
+
+    private void HandleReceivedCommands(CancellationToken token)
+    {
         while (!token.IsCancellationRequested)
         {
         }
