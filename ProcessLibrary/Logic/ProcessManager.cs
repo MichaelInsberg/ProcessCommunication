@@ -12,10 +12,9 @@ namespace ProcessCommunication.ProcessLibrary.Logic;
 /// </summary>
 public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
 {
-    private volatile bool isDisposed;
     private readonly TcpListener server;
+    private volatile bool isDisposed;
     private readonly ConcurrentDictionary<TcpClient, TcpClientItem> connectedClients;
-    private readonly ConcurrentQueue<ProcessDataBase> commandQueue;
 
 
     /// <summary>
@@ -32,7 +31,6 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
         server = new TcpListener(ipPAddress, port);
         IsStarted = false;
         connectedClients = new ConcurrentDictionary<TcpClient, TcpClientItem>();
-        commandQueue = new ConcurrentQueue<ProcessDataBase>();
     }
 
     /// <summary>
@@ -141,11 +139,13 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
                 var networkStream = tcpClient.GetStream();
                 var streamReader = new StreamReader(networkStream, Encoding.Unicode);
                 var result = streamReader.ReadLine();
-                //ToDo Hier den String in die Queue tun und späer vesuchen dern in igrendein Object zu deserialiseiren
-                var obj = SerializerHelper.DeSerialize<CommandStartServer>(new NotEmptyOrWhiteSpace(result));
-                commandQueue.Enqueue(obj);
-                //ToDo enque the commannd in commad queue
-                Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    continue;
+                }
+                var item = TryToGetTcpClientItem(tcpClient, token);
+                item.CommandQueue.Enqueue(result);   
+                Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
                 canContinue = !token.IsCancellationRequested && tcpClient.Connected;
             }
             catch (Exception exception)
@@ -159,11 +159,35 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
         Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {address}"));
     }
 
-    private void RemoveClient(TcpClient tcpClient, CancellationToken token)
+    private TcpClientItem TryToGetTcpClientItem(TcpClient tcpClient, CancellationToken token)
     {
-        if (!connectedClients.TryRemove(tcpClient, out var item))
+        TcpClientItem item;
+        var counter = 0;
+        while (!connectedClients.TryGetValue(tcpClient, out item))
         {
             Task.Delay(1, token).Wait(token);
+            counter++;
+            if (counter >= MAX_RETRIES)
+            {
+                throw new InvalidOperationException($"Max retry reached in {nameof(TryToGetTcpClientItem)}");
+            }
+        }
+
+        return item;
+    }
+
+    private void RemoveClient(TcpClient tcpClient, CancellationToken token)
+    {
+        TcpClientItem item;
+        var counter = 0;
+        while (!connectedClients.TryRemove(tcpClient, out item))
+        {
+            Task.Delay(1, token).Wait(token);
+            counter++;
+            if (counter >= MAX_RETRIES)
+            {
+                throw new InvalidOperationException($"Max retry reached in {nameof(RemoveClient)}");
+            }
         }
         item?.Dispose();
     }
@@ -172,21 +196,47 @@ public sealed class ProcessManager : ProcessCommunicationBase, IDisposable
     {
         while (!token.IsCancellationRequested)
         {
-            if (commandQueue.IsEmpty)
+            if (connectedClients.IsEmpty)
             {
                 Task.Delay(1, token).Wait(token);
                 continue;
             }
+            try
+            {
+                //This throw an exception is a clint ist added or remove but that does not carw
+                foreach ((var client, var clientItem) in connectedClients)
+                {
+                    if (clientItem.CommandQueue.IsEmpty)
+                    {
+                        continue;
+                    }
 
-            commandQueue.TryDequeue(out var command);
-            var item  =connectedClients.FirstOrDefault();
-            var client = item.Key;
-            var networkStream = client.GetStream();
-            var streamWriter = new StreamWriter(networkStream, Encoding.Unicode);
-            var responseStartServer = new ResponseStartServer { IpAddress = IpAddress, IsStarted = true, SerialNumber = "Wurst" };
-            var stringValue = SerializerHelper.Serialize(new NotNull<object>(responseStartServer));
-            streamWriter.WriteLineAsync(stringValue).ConfigureAwait(false);
-            streamWriter.FlushAsync().ConfigureAwait(false);
+                    if (!clientItem.CommandQueue.TryDequeue(out var result))
+                    {
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(result))
+                    {
+                        continue;
+                    }
+                    
+                    
+                    //ToDo Hier vesuchen der string in igrend ein Object zu deserialiseiren
+                    var obj = SerializerHelper.DeSerialize<CommandStartServer>(new NotEmptyOrWhiteSpace(result));
+                    //Todo und dann hier das Response command senden
+                    var networkStream = client.GetStream();
+                    var streamWriter = new StreamWriter(networkStream, Encoding.Unicode);
+                    var responseStartServer = new ResponseStartServer { IpAddress = IpAddress, IsStarted = true, SerialNumber = "Wurst" };
+                    var stringValue = SerializerHelper.Serialize(new NotNull<object>(responseStartServer));
+                    streamWriter.WriteLineAsync(stringValue).ConfigureAwait(false);
+                    streamWriter.FlushAsync().ConfigureAwait(false);
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {nameof(ReceivedCommands)}"), exception);
+            }
         }
     }
 }

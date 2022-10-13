@@ -2,6 +2,8 @@
 {
     public abstract class ProcessCommunicationBase
     {
+        protected const int MAX_RETRIES = 10;
+
         /// <summary>
         /// The internal logger
         /// </summary>

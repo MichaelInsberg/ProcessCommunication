@@ -1,4 +1,6 @@
-﻿namespace ProcessCommunication.ProcessLibrary.DataClasses;
+﻿using System.Collections.Concurrent;
+
+namespace ProcessCommunication.ProcessLibrary.DataClasses;
 
 /// <summary>
 /// The TCP client item class
@@ -8,6 +10,9 @@ public sealed class TcpClientItem : IDisposable
     private volatile bool isDisposed;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly TcpClient client;
+    private readonly ConcurrentQueue<string> commandQueue;
+
+    public ConcurrentQueue<string> CommandQueue => commandQueue;
 
     /// <summary>
     /// Create a new instance of TcpClientItem
@@ -16,6 +21,7 @@ public sealed class TcpClientItem : IDisposable
     {
         this.cancellationTokenSource = cancellationTokenSource;
         this.client = client.Value;
+        commandQueue = new ConcurrentQueue<string>();
     }
 
     /// <summary>

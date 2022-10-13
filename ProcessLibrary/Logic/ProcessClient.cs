@@ -60,6 +60,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic
                     var streamReader = new StreamReader(networkStream, Encoding.Unicode);
                     Logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {IpAddress}"));
                     var result = streamReader.ReadLine();
+                    //ToDo: Hier vesuchen der string in igrend ein Object zu deserialiseiren
                     var obj = SerializerHelper.DeSerialize<ResponseStartServer>(new NotEmptyOrWhiteSpace(result));
                     //ToDo callback with the recieved command
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {obj.GetType()}"));
