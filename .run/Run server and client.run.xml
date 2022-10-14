@@ -1,5 +1,6 @@
 ﻿<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run server and client" type="CompoundRunConfigurationType">
+    <toRun name="MonitorServer" type="DotNetProject" />
     <toRun name="ProcessClient" type="DotNetProject" />
     <toRun name="ProcessServer" type="DotNetProject" />
     <method v="2" />

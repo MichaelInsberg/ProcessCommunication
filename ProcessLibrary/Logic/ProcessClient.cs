@@ -14,7 +14,11 @@
         /// <summary>
         /// Create a new instance of ProcessClient
         /// </summary>
-        public ProcessClient(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port): base(logger, ipAddress, port)
+        public ProcessClient(
+            NotNull<ILogger> logger,             
+            NotNull<ISerializerHelper> serializerHelper, 
+            NotEmptyOrWhiteSpace ipAddress, 
+            int port): base(logger, serializerHelper,ipAddress, port)
         {
             client = new TcpClient();
             ipPAddress = IPAddress.Parse(IpAddress);
@@ -47,7 +51,7 @@
 
         private void ReceivedCommands(Func<IProgessResponseHandler> progessResponseHandler, CancellationToken token)
         {
-            var canContinue = !token.IsCancellationRequested && client.Connected;
+            var canContinue = CanContinue(client, token);
             var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
             while (canContinue)
             {
@@ -61,7 +65,7 @@
                     }
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
                     _ = Task.Factory.StartNew(() => HandleResponse(progessResponseHandler, result), token);
-                    canContinue = !token.IsCancellationRequested && client.Connected;
+                    canContinue = CanContinue(client, token);
                 }
                 catch (Exception exception)
                 {
@@ -73,6 +77,7 @@
 
             Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {IpAddress}"));
         }
+
 
         private void HandleResponse(Func<IProgessResponseHandler> progessResponseHandler, string result)
         {

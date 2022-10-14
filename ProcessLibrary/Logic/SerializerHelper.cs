@@ -3,7 +3,7 @@
 /// <summary>
 /// The serializer helper class
 /// </summary>
-public sealed class SerializerHelper
+public sealed class SerializerHelper : ISerializerHelper
 {
     private readonly JsonSerializerSettings? jsonSerializerSettings;
 

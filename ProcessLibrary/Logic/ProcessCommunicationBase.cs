@@ -2,7 +2,7 @@
 {
     public abstract class ProcessCommunicationBase
     {
-        protected const int MAX_RETRIES = 10;
+        private readonly ISerializerHelper serializerHelper;
 
         /// <summary>
         /// The internal logger
@@ -27,13 +27,23 @@
         /// <summary>
         /// Create a new instance of ProcessCommunicationBase
         /// </summary>
-        protected ProcessCommunicationBase(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port)
+        protected ProcessCommunicationBase(
+            NotNull<ILogger> logger, 
+            NotNull<ISerializerHelper> serializerHelper, 
+            NotEmptyOrWhiteSpace ipAddress, 
+            int port)
         {
-            SerializerHelper = new SerializerHelper();
+            this.serializerHelper = serializerHelper.Value;
             this.Logger = logger.Value;
             IpAddress = ipAddress.Value;
             Port = port;
         }
+
+        protected bool CanContinue(TcpClient tcpClient, CancellationToken token)
+        {
+            return !token.IsCancellationRequested && tcpClient.Connected;
+        }
+
     }
 }
 

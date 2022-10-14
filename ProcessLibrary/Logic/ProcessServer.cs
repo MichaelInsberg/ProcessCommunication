@@ -17,7 +17,11 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     /// <summary>
     /// Create a new instance of ProcessManager
     /// </summary>
-    public ProcessServer(NotNull<ILogger> logger, NotEmptyOrWhiteSpace ipAddress, int port): base(logger, ipAddress, port)
+    public ProcessServer(
+        NotNull<ILogger> logger, 
+        NotNull<ISerializerHelper> serializerHelper, 
+        NotEmptyOrWhiteSpace ipAddress, 
+        int port): base(logger, serializerHelper, ipAddress, port)
     {
         var ipPAddress = IPAddress.Parse(ipAddress.Value);
         server = new TcpListener(ipPAddress, port);
@@ -45,6 +49,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         try
         {
             server.Start();
+            //ToDo send message that server is started UDP??
             _ = Task.Factory.StartNew(() => HandleReceivedCommands(processCommandHandlerCreator, token), TaskCreationOptions.LongRunning);
             IsStarted = true;
             Logger.Log(new NotEmptyOrWhiteSpace(
@@ -94,37 +99,37 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         while (!token.IsCancellationRequested)
         {
             var client = server.AcceptTcpClient();
+            //To to send that new clinet is accepet UDP??
             _ = Task.Factory.StartNew(() => DoCommunication(client, funcProcessCommandHandler, token), TaskCreationOptions.LongRunning);
         }
     }
 
-    private void DoCommunication(TcpClient tcpClient, Func<IProcessCommunicationHandler> funcProcessCommandHandler, CancellationToken token)
+    private void DoCommunication(TcpClient client, Func<IProcessCommunicationHandler> funcProcessCommandHandler, CancellationToken token)
     {
         var address = "Unknown";
-        if (tcpClient.Client.RemoteEndPoint is IPEndPoint endPoint)
+        if (client.Client.RemoteEndPoint is IPEndPoint endPoint)
         {
             address = endPoint.Address.ToString();
         }
         Logger.Log(new NotEmptyOrWhiteSpace($"Start communication with {address}"));
         var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-        var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
-
         try
         {
-            var canContinue = !token.IsCancellationRequested && tcpClient.Connected;
+            var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
+            var canContinue = CanContinue(client, token);
             while (canContinue)
             {
                 try
                 {
-                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(tcpClient));
+                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(client));
                     var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(address), cts.Token);
                     if (string.IsNullOrWhiteSpace(result))
                     {
                         continue;
                     }
                     Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
-                    _ = Task.Factory.StartNew(() => SendResponse(tcpClient, result, funcProcessCommandHandler, cts.Token), token);
-                    canContinue = !token.IsCancellationRequested && tcpClient.Connected;
+                    _ = Task.Factory.StartNew(() => SendResponse(client, result, funcProcessCommandHandler, cts.Token), token);
+                    canContinue = CanContinue(client, token);
                 }
                 catch (Exception exception)
                 {
@@ -140,6 +145,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
             cts.Cancel();
         }
     }
+
 
     private static void SendResponse(
         TcpClient tcpClient, 

@@ -2,7 +2,11 @@
 const int PORT = 58174;
 
 var logger = new DebugLogger();
-using var server = new ProcessServer(new NotNull<ILogger>(logger), new NotEmptyOrWhiteSpace(IP_ADDRESS), PORT);
+using var server = new ProcessServer(
+    new NotNull<ILogger>(logger),
+    new NotNull<ISerializerHelper>(new SerializerHelper()),
+    new NotEmptyOrWhiteSpace(IP_ADDRESS), 
+    PORT);
 using var cts = new CancellationTokenSource();
 
 Func<IProcessCommunicationHandler> func = () => new ProcessServerCommunicationHandler();
