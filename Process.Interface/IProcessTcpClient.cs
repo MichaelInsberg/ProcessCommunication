@@ -7,6 +7,9 @@ namespace Process.Interface;
 /// </summary>
 public interface IProcessTcpClient : IDisposable
 {
-    // Returns the stream used to read and write data to the remote host.
+    /// <summary>
+    /// The get steam method
+    /// </summary>
+    /// <returns>Returns the stream used to read and write data to the remote host</returns>
     NetworkStream GetStream();
 }

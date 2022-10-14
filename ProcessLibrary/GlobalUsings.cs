@@ -9,5 +9,6 @@ global using Process.Interface;
 global using Process.Interface.DataClasses;
 global using ProcessCommunication.ProcessLibrary.DataClasses;
 global using ProcessCommunication.ProcessLibrary.DataClasses.Commands;
+global using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 global using ProcessCommunication.ProcessLibrary.Enumerations;
 global using ProcessCommunication.ProcessLibrary.Logic;
