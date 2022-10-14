@@ -1,8 +1,8 @@
 ﻿using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
-namespace ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler
+namespace ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Server
 {
-    public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandlerBase
+    public sealed class ProcessServerCommunicationHandler : ProcessServerCommunicationHandlerBase
     {
         protected override NotNull<IEnumerable<Type>> GetRegistedTypes()
         {
@@ -13,7 +13,7 @@ namespace ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler
             return new NotNull<IEnumerable<Type>>(enumerable);
         }
 
-        protected override void HandelCommandInternal(NotNull<IProcessTcpClient> processClient, NotNull<CommandBase> command, CancellationToken token)
+        protected override void HandelCommandInternal(NotNull<IProcessTcpClient> processClient, NotNull<ProcessDataBase> command, CancellationToken token)
         {
             var commandType = command.Value.GetType();
             if (commandType == typeof(CommandStartServer))

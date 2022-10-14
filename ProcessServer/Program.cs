@@ -1,4 +1,4 @@
-﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler;
+﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Server;
 
 const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;

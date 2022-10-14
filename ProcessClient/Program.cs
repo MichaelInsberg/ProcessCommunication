@@ -1,4 +1,4 @@
-﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler;
+﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Client;
 
 const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
@@ -10,7 +10,7 @@ using var processClient = new ProcessClient(
     new NotEmptyOrWhiteSpace(IP_ADDRESS),
     PORT);
 using var cts = new CancellationTokenSource();
-Func<IProgessResponseHandler> func = () => new ProgessResponseHandler();
+Func<IProgessResponseHandler> func = () => new ProcessServerClientCommunicationHandler();
 
 processClient.Connect(cts.Token, func);
 
