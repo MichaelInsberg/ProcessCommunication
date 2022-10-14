@@ -8,11 +8,12 @@
         /// The internal logger
         /// </summary>
         protected ILogger Logger { get; }
-        
+
         /// <summary>
         /// The serializer helper
         /// </summary>
-        protected SerializerHelper SerializerHelper { get; }
+        protected ISerializerHelper SerializerHelper => serializerHelper;
+
 
         /// <summary>
         /// Gets or sets the IP address
