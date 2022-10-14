@@ -1,30 +1,43 @@
-﻿namespace ProcessCommunication.ProcessLibrary.Logic
+﻿namespace ProcessCommunication.ProcessLibrary.Logic;
+
+/// <summary>
+/// The process read line class
+/// </summary>
+public sealed class ProcessReadline
 {
-    public sealed class ProcessReadline
+    private readonly ILogger logger;
+
+    /// <summary>
+    /// Create a new instance of ProcessReadline
+    /// </summary>
+    public ProcessReadline(NotNull<ILogger> logger)
     {
-        private readonly ILogger logger;
+        this.logger = logger.Value;
+    }
 
-        public ProcessReadline(NotNull<ILogger> logger)
+    /// <summary>
+    /// The read line method
+    /// </summary>
+    /// <param name="client">The client</param>
+    /// <param name="address">The address</param>
+    /// <param name="token">The cancellation token</param>
+    /// <returns>The received line</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public string Readline(
+        IProcessTcpClient client,
+        NotEmptyOrWhiteSpace address ,
+        CancellationToken token)
+    {
+        logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {address}"));
+        var networkStream = client.GetStream();
+        token.ThrowIfCancellationRequested();
+        var streamReader = new StreamReader(networkStream);
+        var result = streamReader.ReadLine();
+        if (string.IsNullOrWhiteSpace(result))
         {
-            this.logger = logger.Value;
+            throw new InvalidOperationException($"Can not read line form {nameof(client)}");
         }
+        return result;
 
-        public string Readline(
-            IProcessTcpClient client,
-            NotEmptyOrWhiteSpace address ,
-            CancellationToken token)
-        {
-            logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {address}"));
-            var networkStream = client.GetStream();
-            var streamReader = new StreamReader(networkStream);
-            var result = streamReader.ReadLine();
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                throw new InvalidOperationException($"Can not read line form {nameof(client)}");
-            }
-            return result;
-
-        }
     }
 }
-

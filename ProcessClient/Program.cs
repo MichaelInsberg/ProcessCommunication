@@ -10,9 +10,9 @@ using var processClient = new ProcessClient(
     new NotEmptyOrWhiteSpace(IP_ADDRESS),
     PORT);
 using var cts = new CancellationTokenSource();
-Func<IProgessResponseHandler> func = () => new ProcessServerClientCommunicationHandler();
+Func<IProgressClientResponseHandler> func = () => new ProcessServerClientCommunicationHandler();
 
-processClient.Connect(cts.Token, func);
+processClient.Connect(func, cts.Token);
 
 Console.WriteLine($"Client connected {processClient.IsConnected}");
 

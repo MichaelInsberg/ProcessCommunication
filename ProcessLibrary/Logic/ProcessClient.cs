@@ -9,6 +9,9 @@
         private readonly TcpClient client;
         private readonly IPAddress ipPAddress;
 
+        /// <summary>
+        /// Gets the is connected
+        /// </summary>
         public bool IsConnected { get; private set; }
 
         /// <summary>
@@ -33,7 +36,12 @@
             Dispose(disposing: false);
         }
 
-        public void Connect(CancellationToken token, Func<IProgessResponseHandler> progressResponseHandler)
+        /// <summary>
+        /// The connect method
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="progressResponseHandler"></param>
+        public void Connect(Func<IProgressClientResponseHandler> progressResponseHandler, CancellationToken token)
         {
             try
             {
@@ -49,7 +57,7 @@
             }
         }
 
-        private void ReceivedCommands(Func<IProgessResponseHandler> progessResponseHandler, CancellationToken token)
+        private void ReceivedCommands(Func<IProgressClientResponseHandler> progessResponseHandler, CancellationToken token)
         {
             var canContinue = CanContinue(client, token);
             var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
@@ -79,11 +87,11 @@
         }
 
 
-        private void HandleResponse(Func<IProgessResponseHandler> progessResponseHandler, string result)
+        private void HandleResponse(Func<IProgressClientResponseHandler> progressResponseHandler, string result)
         {
             try
             {
-                var processHandler = progessResponseHandler.Invoke();
+                var processHandler = progressResponseHandler.Invoke();
                 processHandler.HandleResponse(new NotEmptyOrWhiteSpace(result));
             }
             catch (Exception exception)

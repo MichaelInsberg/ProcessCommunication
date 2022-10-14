@@ -1,8 +1,8 @@
-﻿namespace ProcessCommunication.MonitorServer
-{
-    public sealed class MonitorServerViewModel
-    {
-        
-    }
-}
+﻿namespace ProcessCommunication.MonitorServer;
 
+/// <summary>
+/// The monitor server view model class
+/// </summary>
+public sealed class MonitorServerViewModel
+{
+}
