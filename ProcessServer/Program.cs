@@ -1,4 +1,6 @@
-﻿const string IP_ADDRESS = "127.0.0.1";
+﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler;
+
+const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
 var logger = new DebugLogger();
@@ -9,7 +11,7 @@ using var server = new ProcessServer(
     PORT);
 using var cts = new CancellationTokenSource();
 
-Func<IProcessCommunicationHandler> func = () => new ProcessServerCommunicationHandler();
+Func<IProcessServerCommunicationHandler> func = () => new ProcessServerCommunicationHandler();
 
 server.Start(func,cts.Token);
 

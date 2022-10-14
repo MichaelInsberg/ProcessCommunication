@@ -1,4 +1,6 @@
-﻿const string IP_ADDRESS = "127.0.0.1";
+﻿using ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler;
+
+const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
 var logger = new DebugLogger();

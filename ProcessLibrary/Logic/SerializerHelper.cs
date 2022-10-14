@@ -25,7 +25,7 @@ public sealed class SerializerHelper : ISerializerHelper
     /// </summary>
     /// <param name="data"></param>
     /// <returns>The Json sting</returns>
-    public string Serialize<T>(NotNull<T> data)
+    public string Serialize(NotNull<object> data)
     {
         return JsonConvert.SerializeObject(data.Value, jsonSerializerSettings);
     }

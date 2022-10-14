@@ -9,7 +9,7 @@ namespace Process.Interface
         /// </summary>
         /// <param name="data"></param>
         /// <returns>The Json sting</returns>
-        string Serialize<T>(NotNull<T> data);
+        string Serialize(NotNull<object> data);
 
         /// <summary>
         /// Deserialize the string

@@ -1,8 +1,8 @@
 ﻿using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
-namespace ProcessCommunication.ProcessLibrary.Logic
+namespace ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler
 {
-    public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandler
+    public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandlerBase
     {
         protected override NotNull<IEnumerable<Type>> GetRegistedTypes()
         {

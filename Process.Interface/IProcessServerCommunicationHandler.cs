@@ -7,7 +7,7 @@ namespace Process.Interface;
 /// <summary>
 /// The process command handler interface
 /// </summary>
-public interface IProcessCommunicationHandler
+public interface IProcessServerCommunicationHandler
 {
     void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token);
 }

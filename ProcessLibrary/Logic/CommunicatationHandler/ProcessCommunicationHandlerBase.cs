@@ -1,11 +1,11 @@
-﻿namespace ProcessCommunication.ProcessLibrary.Logic
+﻿namespace ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler
 {
-    public abstract class ProcessCommunicationHandler : IProcessCommunicationHandler
+    public abstract class ProcessCommunicationHandlerBase : IProcessServerCommunicationHandler 
     {
         private IEnumerable<Type> registerCommandTypes;
         protected SerializerHelper SerializerHelper { get; }
 
-        public ProcessCommunicationHandler()
+        public ProcessCommunicationHandlerBase()
         {
             SerializerHelper = new SerializerHelper();
         }

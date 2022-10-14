@@ -1,8 +1,8 @@
 ﻿using ProcessCommunication.ProcessLibrary.DataClasses.Response;
 
-namespace ProcessCommunication.ProcessLibrary.Logic
+namespace ProcessCommunication.ProcessLibrary.Logic.CommunicatationHandler
 {
-    public sealed class ProcessClientCommunicationHandler : ProcessCommunicationHandler
+    public sealed class ProcessServerClientCommunicationHandler : ProcessCommunicationHandlerBase
     {
         protected override NotNull<IEnumerable<Type>> GetRegistedTypes()
         {
@@ -18,12 +18,8 @@ namespace ProcessCommunication.ProcessLibrary.Logic
             var commandType = command.Value.GetType();
             if (commandType == typeof(ResponseStartServer))
             {
-                var networkStream = processClient.Value.GetStream();
-                var streamWriter = new StreamWriter(networkStream);
-                var responseStartServer = new ResponseStartServer { IpAddress = "Test", IsStarted = true, SerialNumber = "Wurst" };
-                var stringValue = SerializerHelper.Serialize(new NotNull<object>(responseStartServer));
-                streamWriter.WriteLine(stringValue);
-                streamWriter.Flush();
+                var processWriteCommand = new ProcessWriteCommand();
+                processWriteCommand.WriteCommad(processClient, command, new NotNull<ISerializerHelper>(SerializerHelper));
             }
         }
     }
