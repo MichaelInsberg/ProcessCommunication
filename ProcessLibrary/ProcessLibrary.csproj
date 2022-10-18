@@ -27,6 +27,7 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Autofac" Version="6.4.0" />
 		<PackageReference Include="Meziantou.Analyzer" Version="1.0.733">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,6 +40,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Process.Interface\Process.Interface.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="ViewModel" />
 	</ItemGroup>
 
 

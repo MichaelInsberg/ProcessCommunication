@@ -1,4 +1,7 @@
-﻿namespace ProcessCommunication.MonitorServer;
+﻿using ProcessCommunication.ProcessLibrary.Logic;
+using ProcessCommunication.ProcessLibrary.ViewModel;
+
+namespace ProcessCommunication.MonitorServer;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -10,8 +13,7 @@ public sealed partial class MonitorServerView : Window
     /// </summary>
     public MonitorServerView()
     {
-        var model = new MonitorServerViewModel();
-        DataContext = model;
+        DataContext = CoreService.Resolve<MonitorServerViewModel>();
         InitializeComponent();
     }
 }

@@ -19,4 +19,9 @@
         <DocumentationFile>$(SolutionDir)\Docs\$(MSBuildProjectName).xml</DocumentationFile>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Process.Interface\Process.Interface.csproj" />
+      <ProjectReference Include="..\ProcessLibrary\ProcessLibrary.csproj" />
+    </ItemGroup>
+
 </Project>

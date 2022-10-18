@@ -5,10 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:monitorServer="clr-namespace:ProcessCommunication.MonitorServer"
+    xmlns:monitorServer1="clr-namespace:ProcessCommunication.MonitorServer;assembly=ProcessLibrary"
+    xmlns:viewModel="clr-namespace:ProcessCommunication.ProcessLibrary.ViewModel;assembly=ProcessLibrary"
     Title="MainWindow"
     Width="800"
     Height="450"
-    d:DataContext="{d:DesignInstance monitorServer:MonitorServerViewModel,
+    d:DataContext="{d:DesignInstance viewModel:MonitorServerViewModel,
                                      IsDesignTimeCreatable=False}"
     mc:Ignorable="d">
     <Grid />
