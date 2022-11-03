@@ -12,7 +12,7 @@ namespace Process.Interface
         /// </summary>
         /// <param name="data"></param>
         /// <returns>The serialized sting</returns>
-        string Serialize(NotNull<object> data);
+        string Serialize(object data);
 
         /// <summary>
         /// Deserialize the string
@@ -20,7 +20,7 @@ namespace Process.Interface
         /// <param name="stringValue">The string value</param>
         /// <typeparam name="T">The type to return</typeparam>
         /// <returns>The deserialized object</returns>
-        T DeSerialize<T>(NotEmptyOrWhiteSpace stringValue);
+        T DeSerialize<T>(string stringValue);
 
         /// <summary>
         /// Deserialize the string
@@ -28,6 +28,6 @@ namespace Process.Interface
         /// <param name="stringValue">The string value</param>
         /// <param name="type">The type to return</param>
         /// <returns>The deserialized object</returns>
-        object DeSerialize(NotEmptyOrWhiteSpace stringValue, Type type);
+        object DeSerialize(string stringValue, Type type);
     }
 }

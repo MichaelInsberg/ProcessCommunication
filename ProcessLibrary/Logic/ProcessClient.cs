@@ -18,9 +18,9 @@
         /// Create a new instance of ProcessClient
         /// </summary>
         public ProcessClient(
-            NotNull<ILogger> logger,             
-            NotNull<ISerializerHelper> serializerHelper, 
-            NotEmptyOrWhiteSpace ipAddress, 
+            ILogger logger,             
+            ISerializerHelper serializerHelper, 
+            string ipAddress, 
             int port): base(logger, serializerHelper,ipAddress, port)
         {
             client = new TcpClient();
@@ -52,7 +52,7 @@
             catch (Exception exception)
             {
                 IsConnected = false;
-                Logger.LogException(new NotEmptyOrWhiteSpace($"Try to start server with IpAddress <{IpAddress}> and port number <{Port}>"), exception);
+                Logger.LogException($"Try to start server with IpAddress <{IpAddress}> and port number <{Port}>", exception);
                 throw;
             }
         }
@@ -60,13 +60,13 @@
         private void ReceivedCommands(Func<IProgressClientResponseHandler> progessResponseHandler, CancellationToken token)
         {
             var canContinue = CanContinue(client, token);
-            var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
+            var processReadline = new ProcessReadline(Logger);
             while (canContinue)
             {
                 try
                 {
-                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(client));
-                    var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(IpAddress), token);
+                    var processTcpClient = new ProcessTcpClient(client);
+                    var result = processReadline.Readline(processTcpClient, IpAddress, token);
                     if (string.IsNullOrWhiteSpace(result))
                     {
                         continue;
@@ -77,12 +77,12 @@
                 catch (Exception exception)
                 {
                     IsConnected = false;
-                    Logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {IpAddress}"), exception);
+                    Logger.LogException($"Exception during communication with {IpAddress}", exception);
                     canContinue = false;
                 }
             }
 
-            Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {IpAddress}"));
+            Logger.Log($"Finished communication with {IpAddress}");
         }
 
 
@@ -91,31 +91,31 @@
             try
             {
                 var processHandler = progressResponseHandler.Invoke();
-                processHandler.HandleResponse(new NotEmptyOrWhiteSpace(result));
+                processHandler.HandleResponse(result);
             }
             catch (Exception exception)
             {
-                Logger.LogException(new NotEmptyOrWhiteSpace($"Excpetion in {nameof(HandleResponse)}"),exception);
+                Logger.LogException($"Exception in {nameof(HandleResponse)}",exception);
             }
         }
 
         /// <summary>
         /// The write command async method
         /// </summary>
-        /// <param name="startServer"></param>
-        public async Task WriteCommandAsync(CommandBase startServer)
+        /// <param name="command"></param>
+        public async Task WriteCommandAsync(CommandBase command)
         {
             try
             {
                 var networkStream = client.GetStream();
                 var streamWriter = new StreamWriter(networkStream);
-                var stringValue = SerializerHelper.Serialize(new NotNull<object>(startServer));
+                var stringValue = SerializerHelper.Serialize(command);
                 await streamWriter.WriteLineAsync(stringValue).ConfigureAwait(false);
                 await streamWriter.FlushAsync().ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                Logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {IpAddress}"), exception);
+                Logger.LogException($"Exception during communication with {IpAddress}", exception);
                 IsConnected = false;
                 throw;
             }

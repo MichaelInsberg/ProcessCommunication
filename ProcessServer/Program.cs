@@ -4,10 +4,7 @@ const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
 var logger = new DebugLogger();
-using var server = new ProcessServer(
-    new NotNull<ILogger>(logger),
-    new NotNull<ISerializerHelper>(new SerializerHelper()),
-    new NotEmptyOrWhiteSpace(IP_ADDRESS), 
+using var server = new ProcessServer(logger, new SerializerHelper(), IP_ADDRESS,
     PORT);
 using var cts = new CancellationTokenSource();
 
@@ -15,8 +12,8 @@ Func<IProcessServerCommunicationHandler> func = () => new ProcessServerCommunica
 
 server.Start(func,cts.Token);
 
-logger.Log(new NotEmptyOrWhiteSpace($"Server started: {server.IsStarted}"));
-logger.Log(new NotEmptyOrWhiteSpace("Press CTRL C to finish the application"));
+logger.Log($"Server started: {server.IsStarted}");
+logger.Log("Press CTRL C to finish the application");
 var isCanceled = false;
 Console.CancelKeyPress += (_, _) =>
 {

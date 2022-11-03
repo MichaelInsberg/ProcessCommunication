@@ -11,5 +11,5 @@ public interface IProgressClientResponseHandler
     /// The handle command method
     /// </summary>
     /// <param name="command">The receive command</param>
-    void HandleResponse(NotEmptyOrWhiteSpace command);
+    void HandleResponse(string command);
 }

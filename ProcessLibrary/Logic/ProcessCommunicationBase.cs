@@ -32,14 +32,14 @@ public abstract class ProcessCommunicationBase
     /// Create a new instance of ProcessCommunicationBase
     /// </summary>
     protected ProcessCommunicationBase(
-        NotNull<ILogger> logger, 
-        NotNull<ISerializerHelper> serializerHelper, 
-        NotEmptyOrWhiteSpace ipAddress, 
+        ILogger logger, 
+        ISerializerHelper serializerHelper, 
+        string ipAddress, 
         int port)
     {
-        this.serializerHelper = serializerHelper.Value;
-        this.Logger = logger.Value;
-        IpAddress = ipAddress.Value;
+        this.serializerHelper = serializerHelper;
+        this.Logger = logger;
+        IpAddress = ipAddress;
         Port = port;
     }
 

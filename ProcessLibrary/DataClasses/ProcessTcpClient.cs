@@ -11,9 +11,9 @@ public sealed class ProcessTcpClient : IProcessTcpClient
     /// <summary>
     /// Create a new instance of ProcessClient
     /// </summary>
-    public ProcessTcpClient(NotNull<TcpClient> client)
+    public ProcessTcpClient(TcpClient client)
     {
-        this.client = client.Value;
+        this.client = client;
     }
 
     /// <summary>

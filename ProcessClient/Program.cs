@@ -4,11 +4,7 @@ const string IP_ADDRESS = "127.0.0.1";
 const int PORT = 58174;
 
 var logger = new DebugLogger();
-using var processClient = new ProcessClient(
-    new NotNull<ILogger>(logger),
-    new NotNull<ISerializerHelper>(new SerializerHelper()),
-    new NotEmptyOrWhiteSpace(IP_ADDRESS),
-    PORT);
+using var processClient = new ProcessClient(logger, new SerializerHelper(), IP_ADDRESS, PORT);
 using var cts = new CancellationTokenSource();
 Func<IProgressClientResponseHandler> func = () => new ProcessServerClientCommunicationHandler(logger);
 

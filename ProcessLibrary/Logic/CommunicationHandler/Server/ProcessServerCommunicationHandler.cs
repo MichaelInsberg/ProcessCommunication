@@ -6,33 +6,36 @@
 public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandlerBase, IProcessServerCommunicationHandler
 {
     /// <inheritdoc />
-    public void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token)
+    public void HandelCommand(IProcessTcpClient processClient, string command, CancellationToken token)
     {
-        var receivedCommand = GetCommand(command.Value, token);
+        var receivedCommand = GetCommand(command, token);
         if (receivedCommand is null)
         {
+            logger.Log($"Received command {receivedCommand}");
             //Send unknow command
         }
-        HandelCommandInternal(processClient, new NotNull<ProcessDataBase>(receivedCommand), token);
+        logger.Log($"Received command {receivedCommand}");
+
+        HandelCommandInternal(processClient, receivedCommand, token);
     }
 
     /// <inheritdoc />
-    protected override NotNull<IEnumerable<Type>> GetRegisteredTypes()
+    protected override IEnumerable<Type> GetRegisteredTypes()
     {
         var enumerable = new List<Type>
         {
             typeof(CommandStartServer),
         };
-        return new NotNull<IEnumerable<Type>>(enumerable);
+        return enumerable;
     }
 
-    protected void HandelCommandInternal(NotNull<IProcessTcpClient> processTcpClient, NotNull<ProcessDataBase> command, CancellationToken token)
+    protected void HandelCommandInternal(IProcessTcpClient processTcpClient, ProcessDataBase command, CancellationToken token)
     {
-        var commandType = command.Value.GetType();
         var processWriteCommand = new ProcessWriteCommand();
-        if (commandType == typeof(CommandStartServer))
+        if (command is CommandStartServer)
         {
-            processWriteCommand.WriteCommad(processTcpClient, command, new NotNull<ISerializerHelper>(SerializerHelper));
+            //ToDo create response
+            processWriteCommand.WriteCommad(processTcpClient, command, SerializerHelper);
         }
     }
 

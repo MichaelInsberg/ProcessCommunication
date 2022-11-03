@@ -10,9 +10,9 @@ public sealed class ProcessReadline
     /// <summary>
     /// Create a new instance of ProcessReadline
     /// </summary>
-    public ProcessReadline(NotNull<ILogger> logger)
+    public ProcessReadline(ILogger logger)
     {
-        this.logger = logger.Value;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -25,10 +25,10 @@ public sealed class ProcessReadline
     /// <exception cref="InvalidOperationException"></exception>
     public string Readline(
         IProcessTcpClient client,
-        NotEmptyOrWhiteSpace address ,
+        string address ,
         CancellationToken token)
     {
-        logger.Log(new NotEmptyOrWhiteSpace($"Waiting for command {address}"));
+        logger.Log($"Waiting for command {address}");
         var networkStream = client.GetStream();
         token.ThrowIfCancellationRequested();
         var streamReader = new StreamReader(networkStream);

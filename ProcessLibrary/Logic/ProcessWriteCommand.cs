@@ -12,14 +12,14 @@ public sealed class ProcessWriteCommand
     /// <param name="command">The command</param>
     /// <param name="serializerHelper">The serializer helper</param>
     public void WriteCommad(
-        NotNull<IProcessTcpClient> processClient, 
-        NotNull<ProcessDataBase> command,
-        NotNull<ISerializerHelper> serializerHelper)
+        IProcessTcpClient processClient, 
+        ProcessDataBase command,
+        ISerializerHelper serializerHelper)
     {
-        var networkStream = processClient.Value.GetStream();
+        var networkStream = processClient.GetStream();
         // todo using (resource)
         var streamWriter = new StreamWriter(networkStream);
-        var stringValue = serializerHelper.Value.Serialize(new NotNull<object>(command.Value));
+        var stringValue = serializerHelper.Serialize(command);
         streamWriter.WriteLine(stringValue);
         streamWriter.Flush();
     }

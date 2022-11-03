@@ -20,10 +20,10 @@ public sealed class TcpClientItem : IDisposable
     /// <summary>
     /// Create a new instance of TcpClientItem
     /// </summary>
-    public TcpClientItem(NotNull<TcpClient> client, CancellationTokenSource cancellationTokenSource)
+    public TcpClientItem(TcpClient client, CancellationTokenSource cancellationTokenSource)
     {
         this.cancellationTokenSource = cancellationTokenSource;
-        this.client = client.Value;
+        this.client = client;
         commandQueue = new ConcurrentQueue<string>();
     }
 

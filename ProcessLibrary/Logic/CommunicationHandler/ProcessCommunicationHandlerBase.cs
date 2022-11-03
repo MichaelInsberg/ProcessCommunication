@@ -24,7 +24,7 @@
         /// The get registered types method
         /// </summary>
         /// <returns>The registered types enumerable</returns>
-        protected abstract NotNull<IEnumerable<Type>> GetRegisteredTypes();
+        protected abstract IEnumerable<Type> GetRegisteredTypes();
 
         /// <summary>
         /// The get command method
@@ -34,7 +34,7 @@
         /// <returns>The </returns>
         protected ProcessDataBase? GetCommand(string commandValue, CancellationToken cancellationToken)
         {
-            var registerCommandTypes = GetRegisteredTypes().Value;
+            var registerCommandTypes = GetRegisteredTypes();
             ProcessDataBase? result = null; 
             foreach (var registerCommand in registerCommandTypes)
             {
@@ -44,7 +44,7 @@
                     {
                         return null;
                     }
-                    result = (ProcessDataBase)SerializerHelper.DeSerialize(new NotEmptyOrWhiteSpace(commandValue), registerCommand);
+                    result = (ProcessDataBase)SerializerHelper.DeSerialize(commandValue, registerCommand);
                 }
                 catch
                 {

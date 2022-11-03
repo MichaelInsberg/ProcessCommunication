@@ -21,29 +21,29 @@ public sealed class SerializerHelper : ISerializerHelper
     }
 
     /// <inheritdoc />
-    public string Serialize(NotNull<object> data)
+    public string Serialize(object data)
     {
-        return JsonConvert.SerializeObject(data.Value, jsonSerializerSettings);
+        return JsonConvert.SerializeObject(data, jsonSerializerSettings);
     }
 
     /// <inheritdoc />
-    public T DeSerialize<T>(NotEmptyOrWhiteSpace stringValue)
+    public T DeSerialize<T>(string stringValue)
     {
-        var deserializeObject = JsonConvert.DeserializeObject<T>(stringValue.Value, jsonSerializerSettings);
+        var deserializeObject = JsonConvert.DeserializeObject<T>(stringValue, jsonSerializerSettings);
         if (deserializeObject is null)
         {
-            throw new NotSupportedException($"Unable to deserialize {stringValue.Value}");
+            throw new NotSupportedException($"Unable to deserialize {stringValue}");
         }
         return deserializeObject;
     }
 
     /// <inheritdoc />
-    public object DeSerialize(NotEmptyOrWhiteSpace stringValue, Type type)
+    public object DeSerialize(string stringValue, Type type)
     {
-        var deserializeObject = JsonConvert.DeserializeObject(stringValue.Value, type, jsonSerializerSettings);
+        var deserializeObject = JsonConvert.DeserializeObject(stringValue, type, jsonSerializerSettings);
         if (deserializeObject is null)
         {
-            throw new NotSupportedException($"Unable to deserialize {stringValue.Value}");
+            throw new NotSupportedException($"Unable to deserialize {stringValue}");
         }
         return deserializeObject;
     }

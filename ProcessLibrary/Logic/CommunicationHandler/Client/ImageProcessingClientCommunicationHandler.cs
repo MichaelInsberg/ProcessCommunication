@@ -3,21 +3,21 @@
     public class ImageProcessingClientCommunicationHandler: ProcessCommunicationHandlerBase, IProgressClientResponseHandler
     {
         /// <inheritdoc />
-        protected override NotNull<IEnumerable<Type>> GetRegisteredTypes()
+        protected override IEnumerable<Type> GetRegisteredTypes()
         {
             var enumerable = new List<Type>
             {
                 typeof(ResponseImageProcessingConvertImage),
             };
-            return new NotNull<IEnumerable<Type>>(enumerable);
+            return enumerable;
         }
 
         /// <inheritdoc />
-        public void HandleResponse(NotEmptyOrWhiteSpace command)
+        public void HandleResponse(string command)
         {
-            var receivedCommand = GetCommand(command.Value, CancellationToken.None);
+            var receivedCommand = GetCommand(command, CancellationToken.None);
 
-            logger.Log(new NotEmptyOrWhiteSpace($"Response is {receivedCommand}"));
+            logger.Log($"Response is {receivedCommand}");
         }
 
         public ImageProcessingClientCommunicationHandler(ILogger logger) : base(logger)

@@ -8,15 +8,15 @@ namespace ProcessCommunication.ProcessLibrary.Logic
     public sealed class DebugLogger : ILogger
     {
         /// <inheritdoc />
-        public void Log(NotEmptyOrWhiteSpace logMessage)
+        public void Log(string logMessage)
         {
             LogException(logMessage, null);
         }
 
         /// <inheritdoc />
-        public void LogException(NotEmptyOrWhiteSpace logMessage, Exception? exception)
+        public void LogException(string logMessage, Exception? exception)
         {
-            WriteMessage(logMessage.Value);
+            WriteMessage(logMessage);
             if (exception is null)
             {
                 return;

@@ -18,12 +18,12 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     /// Create a new instance of ProcessManager
     /// </summary>
     public ProcessServer(
-        NotNull<ILogger> logger, 
-        NotNull<ISerializerHelper> serializerHelper, 
-        NotEmptyOrWhiteSpace ipAddress, 
+        ILogger logger, 
+        ISerializerHelper serializerHelper, 
+        string ipAddress, 
         int port): base(logger, serializerHelper, ipAddress, port)
     {
-        var ipPAddress = IPAddress.Parse(ipAddress.Value);
+        var ipPAddress = IPAddress.Parse(ipAddress);
         server = new TcpListener(ipPAddress, port);
         IsStarted = false;
     }
@@ -43,26 +43,26 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
     /// <param name="token">The cancellation token </param>
     public void Start(Func<IProcessServerCommunicationHandler> processCommandHandlerCreator, CancellationToken token)
     {
-        Logger.Log(new NotEmptyOrWhiteSpace(
+        Logger.Log(
             $"Try to start server with IpAddress <{IpAddress}> and port number " +
-            $"<{Port.ToString(CultureInfo.InvariantCulture)}>"));
+            $"<{Port.ToString(CultureInfo.InvariantCulture)}>");
         try
         {
             server.Start();
             //ToDo send message that server is started UDP??
             _ = Task.Factory.StartNew(() => HandleReceivedCommands(processCommandHandlerCreator, token), TaskCreationOptions.LongRunning);
             IsStarted = true;
-            Logger.Log(new NotEmptyOrWhiteSpace(
+            Logger.Log(
                 $"Started server with IpAddress <{IpAddress}>" +
-                $" and port number <{Port.ToString(CultureInfo.InvariantCulture)}>"));
+                $" and port number <{Port.ToString(CultureInfo.InvariantCulture)}>");
         }
         catch (Exception exception)
         {
             IsStarted = false;
-            Logger.LogException(new NotEmptyOrWhiteSpace(
+            Logger.LogException(
                 "Exception when try to start server" +
                 $" IpAddress <{IpAddress}> and port number " +
-                $"<{Port.ToString(CultureInfo.InvariantCulture)}>"), exception);
+                $"<{Port.ToString(CultureInfo.InvariantCulture)}>", exception);
             throw;
         }
     }
@@ -111,18 +111,18 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         {
             address = endPoint.Address.ToString();
         }
-        Logger.Log(new NotEmptyOrWhiteSpace($"Start communication with {address}"));
+        Logger.Log($"Start communication with {address}");
         var cts = CancellationTokenSource.CreateLinkedTokenSource(token);
         try
         {
-            var processReadline = new ProcessReadline(new NotNull<ILogger>(Logger));
+            var processReadline = new ProcessReadline(Logger);
             var canContinue = CanContinue(client, token);
             while (canContinue)
             {
                 try
                 {
-                    var processTcpClient = new ProcessTcpClient(new NotNull<TcpClient>(client));
-                    var result = processReadline.Readline(processTcpClient, new NotEmptyOrWhiteSpace(address), cts.Token);
+                    var processTcpClient = new ProcessTcpClient(client);
+                    var result = processReadline.Readline(processTcpClient, address, cts.Token);
                     if (string.IsNullOrWhiteSpace(result))
                     {
                         continue;
@@ -132,7 +132,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
                 }
                 catch (Exception exception)
                 {
-                    Logger.LogException(new NotEmptyOrWhiteSpace($"Exception during communication with {address}"), exception);
+                    Logger.LogException($"Exception during communication with {address}", exception);
                     canContinue = false;
                 }
             }
@@ -140,7 +140,7 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         finally
         {
             //ToDo how to dispose cts an Tcp client
-            Logger.Log(new NotEmptyOrWhiteSpace($"Finished communication with {address}"));
+            Logger.Log($"Finished communication with {address}");
             cts.Cancel();
         }
     }
@@ -153,8 +153,8 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
         CancellationToken token)
     {
         var processHandler = funcProcessCommandHandler.Invoke();
-        var client = new ProcessTcpClient(new NotNull<TcpClient>(tcpClient));
-        var processClient = new NotNull<IProcessTcpClient>(client);
-        processHandler.HandelCommand(processClient, new NotEmptyOrWhiteSpace(processCommand), token);
+        var client = new ProcessTcpClient(tcpClient);
+        var processClient = client;
+        processHandler.HandelCommand(processClient, processCommand, token);
     }
 }

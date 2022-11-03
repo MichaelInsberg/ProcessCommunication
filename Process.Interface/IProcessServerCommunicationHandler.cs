@@ -13,5 +13,5 @@ public interface IProcessServerCommunicationHandler
     /// <param name="processClient">The process client to send a response</param>
     /// <param name="command">The receive command</param>
     /// <param name="token">The cancellation token</param>
-    void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token);
+    void HandelCommand(IProcessTcpClient processClient, string command, CancellationToken token);
 }
