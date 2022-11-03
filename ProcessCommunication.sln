@@ -19,6 +19,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorServer", "MonitorServer\MonitorServer.csproj", "{48AC988A-3AE1-4541-9BB4-92253D7331A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageProcessingServer", "ImageProcessingServer\ImageProcessingServer.csproj", "{F112A944-4D46-4D79-BF17-C1260E6EE739}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Servers", "Servers", "{511D81CF-5A4B-4DFD-A425-42B667CF9E61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,10 @@ Global
 		{48AC988A-3AE1-4541-9BB4-92253D7331A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48AC988A-3AE1-4541-9BB4-92253D7331A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48AC988A-3AE1-4541-9BB4-92253D7331A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,6 +36,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="SonarAnalyzer" Version="6.6.0.3969" />
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0-rc.2.22472.3"/>
 	</ItemGroup>
 
 	<ItemGroup>
