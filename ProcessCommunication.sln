@@ -17,11 +17,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.sonarlint\4jetf4\CSharp\SonarLint.xml = .sonarlint\4jetf4\CSharp\SonarLint.xml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorServer", "MonitorServer\MonitorServer.csproj", "{48AC988A-3AE1-4541-9BB4-92253D7331A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonitorClient", "MonitorClient\MonitorClient.csproj", "{48AC988A-3AE1-4541-9BB4-92253D7331A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageProcessingServer", "ImageProcessingServer\ImageProcessingServer.csproj", "{F112A944-4D46-4D79-BF17-C1260E6EE739}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Servers", "Servers", "{511D81CF-5A4B-4DFD-A425-42B667CF9E61}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{638EBEF4-0A51-4BD1-9778-15C49B85DF6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageProcessingClient", "ImageProcessingClient\ImageProcessingClient.csproj", "{5500CF66-2532-41B6-8408-AFA6DFC725EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,11 +57,22 @@ Global
 		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F112A944-4D46-4D79-BF17-C1260E6EE739}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5500CF66-2532-41B6-8408-AFA6DFC725EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5500CF66-2532-41B6-8408-AFA6DFC725EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5500CF66-2532-41B6-8408-AFA6DFC725EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5500CF66-2532-41B6-8408-AFA6DFC725EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7FC3847E-1DAF-4E1F-8214-E8C674C11CEB}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F4D8F11E-60BA-4A1E-8183-258693D3C087} = {511D81CF-5A4B-4DFD-A425-42B667CF9E61}
+		{F112A944-4D46-4D79-BF17-C1260E6EE739} = {511D81CF-5A4B-4DFD-A425-42B667CF9E61}
+		{15CA3480-1DD2-4BEF-B31F-E01FC0C95C6A} = {638EBEF4-0A51-4BD1-9778-15C49B85DF6F}
+		{48AC988A-3AE1-4541-9BB4-92253D7331A2} = {638EBEF4-0A51-4BD1-9778-15C49B85DF6F}
+		{5500CF66-2532-41B6-8408-AFA6DFC725EB} = {638EBEF4-0A51-4BD1-9778-15C49B85DF6F}
 	EndGlobalSection
 EndGlobal

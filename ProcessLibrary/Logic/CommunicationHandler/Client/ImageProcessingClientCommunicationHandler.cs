@@ -1,16 +1,13 @@
 ﻿namespace ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Client
 {
-    /// <summary>
-    /// The process server client communication handler class
-    /// </summary>
-    public sealed class ProcessServerClientCommunicationHandler : ProcessCommunicationHandlerBase, IProgressClientResponseHandler
+    public class ImageProcessingClientCommunicationHandler: ProcessCommunicationHandlerBase, IProgressClientResponseHandler
     {
         /// <inheritdoc />
         protected override NotNull<IEnumerable<Type>> GetRegisteredTypes()
         {
             var enumerable = new List<Type>
             {
-                typeof(ResponseStartServer),
+                typeof(ResponseImageProcessingConvertImage),
             };
             return new NotNull<IEnumerable<Type>>(enumerable);
         }
@@ -23,9 +20,8 @@
             logger.Log(new NotEmptyOrWhiteSpace($"Response is {receivedCommand}"));
         }
 
-        public ProcessServerClientCommunicationHandler(ILogger logger) : base(logger)
+        public ImageProcessingClientCommunicationHandler(ILogger logger) : base(logger)
         {
         }
     }
 }
-

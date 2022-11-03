@@ -40,11 +40,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Process.Interface\Process.Interface.csproj" />
+		<ProjectReference Include="..\Process.Interface\Process.Interface.csproj"/>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="ViewModel" />
+		<Folder Include="Images"/>
+		<Folder Include="ViewModel"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Images\20181114_042550103_iOS.jpg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 

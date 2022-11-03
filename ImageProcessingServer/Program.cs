@@ -11,7 +11,7 @@ using var server = new ProcessServer(
     PORT);
 using var cts = new CancellationTokenSource();
 
-Func<IProcessServerCommunicationHandler> func = () => new ProcessServerCommunicationHandler();
+Func<IProcessServerCommunicationHandler> func = () => new ImageProcessingServerCommunicationHandler(logger);
 
 server.Start(func,cts.Token);
 

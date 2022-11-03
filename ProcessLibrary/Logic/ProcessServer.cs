@@ -127,7 +127,6 @@ public sealed class ProcessServer : ProcessCommunicationBase, IDisposable
                     {
                         continue;
                     }
-                    Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
                     _ = Task.Factory.StartNew(() => SendResponse(client, result, funcProcessCommandHandler, cts.Token), token);
                     canContinue = CanContinue(client, token);
                 }

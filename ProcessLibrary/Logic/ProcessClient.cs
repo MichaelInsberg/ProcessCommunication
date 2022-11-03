@@ -71,7 +71,6 @@
                     {
                         continue;
                     }
-                    Logger.Log(new NotEmptyOrWhiteSpace($"Receive command {result}"));
                     _ = Task.Factory.StartNew(() => HandleResponse(progessResponseHandler, result), token);
                     canContinue = CanContinue(client, token);
                 }

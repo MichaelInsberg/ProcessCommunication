@@ -1,9 +1,8 @@
-﻿namespace ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Server;
+﻿using System.Drawing;
 
-/// <summary>
-/// The process server communication handler class
-/// </summary>
-public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHandlerBase, IProcessServerCommunicationHandler
+namespace ProcessCommunication.ProcessLibrary.Logic.CommunicationHandler.Server;
+
+public class ImageProcessingServerCommunicationHandler : ProcessCommunicationHandlerBase, IProcessServerCommunicationHandler
 {
     /// <inheritdoc />
     public void HandelCommand(NotNull<IProcessTcpClient> processClient, NotEmptyOrWhiteSpace command, CancellationToken token)
@@ -21,22 +20,27 @@ public sealed class ProcessServerCommunicationHandler : ProcessCommunicationHand
     {
         var enumerable = new List<Type>
         {
-            typeof(CommandStartServer),
+            typeof(CommandConvertImage),
         };
         return new NotNull<IEnumerable<Type>>(enumerable);
     }
 
     protected void HandelCommandInternal(NotNull<IProcessTcpClient> processTcpClient, NotNull<ProcessDataBase> command, CancellationToken token)
     {
-        var commandType = command.Value.GetType();
         var processWriteCommand = new ProcessWriteCommand();
-        if (commandType == typeof(CommandStartServer))
+        
+        if (command.Value is CommandConvertImage commandConvertImage)
         {
-            processWriteCommand.WriteCommad(processTcpClient, command, new NotNull<ISerializerHelper>(SerializerHelper));
+            using var memoryStream = new MemoryStream(commandConvertImage.BitmapData.ToArray());
+            using var bitmap = new Bitmap(memoryStream);
+            var response = new ResponseImageProcessingConvertImage();
+            response.SetBitmap(bitmap);
+            processWriteCommand.WriteCommad(processTcpClient, new NotNull<ProcessDataBase>(response), new NotNull<ISerializerHelper>(SerializerHelper));
+            bitmap.Save("ReceiveImage.jpg");
         }
     }
 
-    public ProcessServerCommunicationHandler(ILogger logger) : base(logger)
+    public ImageProcessingServerCommunicationHandler(ILogger logger) : base(logger)
     {
     }
 }

@@ -5,6 +5,8 @@
     /// </summary>
     public abstract class ProcessCommunicationHandlerBase 
     {
+        protected readonly ILogger logger;
+
         /// <summary>
         /// Gets or sets the serializer helper
         /// </summary>
@@ -13,9 +15,10 @@
         /// <summary>
         /// Create a new instance of ProcessCommunicationHandlerBase
         /// </summary>
-        protected ProcessCommunicationHandlerBase()
+        protected ProcessCommunicationHandlerBase(ILogger logger)
         {
             SerializerHelper = new SerializerHelper();
+            this.logger = logger;
         }
         /// <summary>
         /// The get registered types method
